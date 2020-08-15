@@ -118,7 +118,7 @@ extension String {
     /// Split string into lines and return an iterable object
     ///  (Note: This method in not lazy. The string is split before returning)
     /// - Parameter delimiter: Line delimiter (default: "\n")
-    func lines(delimiter: String = "\n") -> LineReader {
+    public func lines(delimiter: String = "\n") -> LineReader {
         return LineReader(string: self, delimiter: delimiter)
     }
 }
