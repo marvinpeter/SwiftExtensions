@@ -68,7 +68,23 @@ extension Array {
         })
 	}
     
+    
+    /// Seperate elements in two array based on if the predicate matches
+    /// - Parameter predicate: Predicate
+    /// - Returns: (matching elements, non-matching elements)
+    public func separate(predicate: (Element) -> Bool) -> (matching: [Element], notMatching: [Element]) {
+        var groups: ([Element],[Element]) = ([],[])
+        for element in self {
+            if predicate(element) {
+                groups.0.append(element)
+            } else {
+                groups.1.append(element)
+            }
+        }
+        return groups
+    }
 
+    
 	/// Get element at a specific index or null if it does not exist
 	/// - Parameters:
 	///   - index: Value index

@@ -8,13 +8,6 @@
 import Foundation
 import FileKit
 
-private func stripFileExtension(_ filename: String) -> String {
-	var components = filename.components(separatedBy: ".")
-	guard components.count > 1 else { return filename }
-	components.removeLast()
-	return components.joined(separator: ".")
-}
-
 extension Path {
 
 	/// Exclude path from iCloud backups
@@ -30,13 +23,27 @@ extension Path {
 
 	/// Get path without file extension
 	public var withoutExtension: Path {
-		self.parent + stripFileExtension(self.fileName)
+        self.parent + self.url.deletingPathExtension().lastPathComponent
 	}
 
 
 	/// Get a new path by replace the file extension
 	/// - Parameter ext: New file extension
 	public func replacingExtension(with ext: String) -> Path {
-		self.parent + (stripFileExtension(self.fileName) + "." + ext)
+        self.parent + "\(self.url.deletingPathExtension().lastPathComponent).\(ext)"
 	}
+
+    
+    /// Get file name without extension
+    public var fileBaseName: String {
+        self.url.deletingPathExtension().lastPathComponent
+    }
+}
+
+extension Path {
+    
+    /// Get iCloud Drive document path
+    public static var cloudDocuments: Path {
+        Path(FileManager.default.url(forUbiquityContainerIdentifier: nil)!.path) + "Documents"
+    }
 }
