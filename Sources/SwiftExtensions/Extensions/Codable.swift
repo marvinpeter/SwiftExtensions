@@ -10,56 +10,72 @@ import FileKit
 
 extension Encodable {
 
-	/// Encode struct to JSON data
-	/// - Returns: Data
-	public func toJsonData() -> Data? {
-		return try? JSONEncoder().encode(self)
-	}
+    /// Encode struct to JSON data
+    /// - Returns: Data
+    public func toJsonData() -> Data? {
+        return try? JSONEncoder().encode(self)
+    }
 
 
-	/// Encode to JSON and write it to storage
-	/// - Parameter path: Save path
-	public func write(to path: Path) throws {
-		guard let data = self.toJsonData() else {
-			return
-		}
-		return try File(path: path).write(data)
-	}
+    /// Encode to JSON and write it to storage
+    /// - Parameter path: Save path
+    public func write(to path: Path) throws {
+        if path.pathExtension == "plist" {
+            let encoder = PropertyListEncoder()
+            encoder.outputFormat = .xml
+            
+            let data = try encoder.encode(self)
+            return try File(path: path).write(data)
+        } else {
+
+            let data = try JSONEncoder().encode(self)
+            return try File(path: path).write(data)
+        }
+    }
 
 
-	/// Encode struct into dictionary
-	public func toDict() -> [String: Any]? {
-		guard let data = try? JSONEncoder().encode(self) else {
+    /// Encode struct into dictionary
+    public func toDict() -> [String: Any]? {
+        guard let data = try? JSONEncoder().encode(self) else {
             return nil
         }
-		return (try? JSONSerialization.jsonObject(with: data, options: .allowFragments))
+        return (try? JSONSerialization.jsonObject(with: data, options: .allowFragments))
             .flatMap { $0 as? [String: Any] }
-	}
+    }
 }
 
 extension Decodable {
 
-	/// Decode from  JSON data
-	/// - Parameter data: Data
-	public init?(withJson data: Data) {
-		guard let res = try? JSONDecoder().decode(Self.self, from: data) else {
-			return nil
-		}
-		self = res
-	}
-    
+    /// Decode from  JSON data
+    /// - Parameter data: Data
+    public init?(withJson data: Data) {
+        guard let res = try? JSONDecoder().decode(Self.self, from: data) else {
+            return nil
+        }
+        self = res
+    }
 
-	/// Load decoable object from JSON file
-	/// - Parameter path: Path path to JSON file
-	public init?(from path: Path) {
-		guard let data = try? File<Data>(path: path).read() else {
-			return nil
-		}
 
-		guard let res = try? JSONDecoder().decode(Self.self, from: data) else {
-			return nil
-		}
+    /// Load decoable object from JSON file
+    /// - Parameter path: Path path to JSON file
+    public init?(from path: Path) {
+        guard let data = try? File<Data>(path: path).read() else {
+            return nil
+        }
 
-		self = res
-	}
+        if path.pathExtension == "plist" {
+            let decoder = PropertyListDecoder()
+            guard let res = try? decoder.decode(Self.self, from: data) else {
+                return nil
+            }
+
+            self = res
+        } else {
+            guard let res = try? JSONDecoder().decode(Self.self, from: data) else {
+                return nil
+            }
+
+            self = res
+        }
+    }
 }
